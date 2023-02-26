@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Surface;
 
 import com.dji.videostreamdecodingsample.R;
+import com.dji.videostreamdecodingsample.VideoService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +77,9 @@ public class DJIVideoStreamDecoder implements NativeHelper.NativeDataListener {
     LinkedList<Long> bufferChangedQueue=new LinkedList<Long>();
 
     private long createTime;
+
+    // This is the class Rosetta uses for sending the video stream via RTP
+    private VideoService videoService;
 
     /**
      * Set the yuv frame data receiving callback. The callback method will be invoked when the decoder
@@ -193,6 +197,14 @@ public class DJIVideoStreamDecoder implements NativeHelper.NativeDataListener {
         if (dataHandler != null && !dataHandler.hasMessages(MSG_INIT_CODEC)) {
             dataHandler.sendEmptyMessage(MSG_INIT_CODEC);
         }
+
+        initRosetta();
+    }
+
+    void initRosetta() {
+        videoService = new VideoService();
+        videoService.onCreate();
+        videoService.setParameters("192.168.0.2", 5000, 2000, 2);
     }
 
     /**
@@ -794,6 +806,13 @@ public class DJIVideoStreamDecoder implements NativeHelper.NativeDataListener {
             return;
         }
 
+        // Pack the raw H.264 stream...
+        try {
+            videoService.splitNALs(inputFrame.videoBuffer);
+        } catch (Exception e){
+            Log.d("VideoService",Log.getStackTraceString(e));
+        }
+
         int inIndex = codec.dequeueInputBuffer(0);
 
         // Decode the frame using MediaCodec
@@ -881,6 +900,11 @@ public class DJIVideoStreamDecoder implements NativeHelper.NativeDataListener {
         if (dataHandler == null || dataHandlerThread == null || !dataHandlerThread.isAlive()) {
             return;
         }
+
+        if(isKeyFrame) {
+            Log.d(TAG, "got an IFRAME (never happens, at least not on the Mini SE)");
+        }
+
         if (data.length != size) {
             loge( "recv data size: " + size + ", data lenght: " + data.length);
         } else {
