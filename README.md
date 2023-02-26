@@ -1,5 +1,8 @@
 ## Based on https://github.com/DJI-Mobile-SDK-Tutorials/Android-VideoStreamDecodingSample but updated frequently. 
 
+This is a modified version that does RTP streaming.
+To enable it, change the IP and port in the source code and press the "custom decoder" button.
+
 # Android-VideoStreamDecodingSample
 
 ## Introduction
