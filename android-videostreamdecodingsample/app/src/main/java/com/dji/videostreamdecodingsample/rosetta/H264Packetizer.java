@@ -21,6 +21,7 @@ package com.dji.videostreamdecodingsample.rosetta;
 import android.annotation.SuppressLint;
 import android.util.Log;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -106,6 +107,17 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
         }
     }
 
+    boolean busy = false;
+    public void addData(byte[] buffer) {
+        synchronized (this) {
+            if(!busy) { // Don't change the inputStream while it is being sent
+                setInputStream(new ByteArrayInputStream(buffer));
+            } else {
+                Log.i(TAG, "Buffer is busy"); // TODO: Didn't happen.
+            }
+        }
+    }
+
     public void run() {
         long duration = 0;
         stats.reset();
@@ -114,17 +126,26 @@ public class H264Packetizer extends AbstractPacketizer implements Runnable {
         socket.setCacheSize(0);
 
         try {
-            while (is.available() > 0) {
-                oldtime = System.nanoTime();
-                // We read a NAL units from the input stream and we send them
-                send();
-                // We measure how long it took to receive NAL units from the phone
-                duration = System.nanoTime() - oldtime;
+            // CHANGED: We are now running the packetizer in a separate thread using start() instead of run().
+            // WAS: while (is.available() > 0) {
+            boolean runNonStop = true;
+            while(runNonStop) {
+                synchronized (this) {
+                    busy = true;
+                    while (is != null && is.available() > 0) {
+                        oldtime = System.nanoTime();
+                        // We read a NAL units from the input stream and we send them
+                        send();
+                        // We measure how long it took to receive NAL units from the phone
+                        duration = System.nanoTime() - oldtime;
 
-                stats.push(duration);
-                // Computes the average duration of a NAL unit
-                delay = stats.average();
-                //Log.d(TAG,"duration: "+duration/1000000+" delay: "+delay/1000000);
+                        stats.push(duration);
+                        // Computes the average duration of a NAL unit
+                        delay = stats.average();
+                        //Log.d(TAG,"duration: "+duration/1000000+" delay: "+delay/1000000);
+                    }
+                    busy = false;
+                }
             }
         } catch (IOException | InterruptedException e) {
             Log.d(TAG, "exception", e);

@@ -14,9 +14,14 @@ import android.view.Surface;
 
 import com.dji.videostreamdecodingsample.R;
 import com.dji.videostreamdecodingsample.VideoService;
+import com.dji.videostreamdecodingsample.rosetta.H264Packetizer;
+
+import net.majorkernelpanic.streaming.rtp.MediaCodecInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -191,14 +196,14 @@ public class DJIVideoStreamDecoder implements NativeHelper.NativeDataListener {
      * should set "null" surface when calling the "configure" method of MediaCodec.
      */
     public void init(Context context, Surface surface) {
+        initRosetta();
+
         this.context = context;
         this.surface = surface;
         NativeHelper.getInstance().setDataListener(this);
         if (dataHandler != null && !dataHandler.hasMessages(MSG_INIT_CODEC)) {
             dataHandler.sendEmptyMessage(MSG_INIT_CODEC);
         }
-
-        initRosetta();
     }
 
     void initRosetta() {
@@ -793,8 +798,19 @@ public class DJIVideoStreamDecoder implements NativeHelper.NativeDataListener {
      * Dequeue the frames from the queue and decode them using the hardware decoder.
      * @throws Exception
      */
+    private int counter = 0;
+    boolean splitNALs = true;
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void decodeFrame() throws Exception {
+        /*
+        counter++;
+        if(counter++ >= 1000) {
+            counter = 0;
+        } else {
+            return;
+        }
+        */
+
         DJIFrame inputFrame = frameQueue.poll();
         if (inputFrame == null) {
             return;
@@ -806,9 +822,15 @@ public class DJIVideoStreamDecoder implements NativeHelper.NativeDataListener {
             return;
         }
 
+
         // Pack the raw H.264 stream...
         try {
-            videoService.splitNALs(inputFrame.videoBuffer);
+            if(splitNALs) {
+                videoService.splitNALs(inputFrame.videoBuffer);
+            } else {
+                videoService.sendNAL(inputFrame.videoBuffer);
+            }
+
         } catch (Exception e){
             Log.d("VideoService",Log.getStackTraceString(e));
         }

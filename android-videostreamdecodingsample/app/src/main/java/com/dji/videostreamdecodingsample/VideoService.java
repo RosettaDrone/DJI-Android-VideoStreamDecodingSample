@@ -28,8 +28,8 @@ import java.util.Arrays;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-// import com.dji.videostreamdecodingsample.rosetta.H264Packetizer;
-import net.majorkernelpanic.streaming.rtp.H264Packetizer;
+import com.dji.videostreamdecodingsample.rosetta.H264Packetizer;
+//import net.majorkernelpanic.streaming.rtp.H264Packetizer;
 
 public class VideoService extends Service {
 
@@ -42,19 +42,24 @@ public class VideoService extends Service {
     private final IBinder binder = new LocalBinder();
 
     private String mip;
+    public InetAddress destAddress;
     private int mvideoPort;
     private int mvideoBitrate = 3000;
     private int mencodeSpeed = 2;
 
-    @Override
+    //@Override
     public void onCreate() {
+        super.onCreate();
+
         Log.e(TAG, "oncreate Video ");
 
         if (mPacketizer != null && mPacketizer.getRtpSocket() != null)
             mPacketizer.getRtpSocket().close();
 
         mPacketizer = new H264Packetizer();
-        super.onCreate();
+        mPacketizer.start(); // TODO: Interrupt in setActionDroneDisconnected()
+        isRunning = true;
+        // initVideoStreamDecoder();
     }
 
     @Override
@@ -95,6 +100,12 @@ public class VideoService extends Service {
         initPacketizer(mip, mvideoPort, mvideoBitrate, mencodeSpeed);
     }
 
+    /*
+    public void setDualVideo(boolean dualVideo) {
+        mPacketizer.socket.UseDualVideo(dualVideo);
+    }
+    */
+
     private void setActionDroneDisconnected() {
         stopForeground(true);
         isRunning = false;
@@ -105,16 +116,23 @@ public class VideoService extends Service {
         }
     }
 
+	/*
+    private void initVideoStreamDecoder() {
+        NativeHelper.getInstance().init();
+        NativeHelper.getInstance().setDataListener(this);
+    }
+    */
+
     private void initPacketizer(String ip, int videoPort, int videoBitrate, int encodeSpeed) {
         Log.i(TAG, "Gst initPacketizer. ");
 
         try {
             mPacketizer.getRtpSocket().setDestination(InetAddress.getByName(ip), videoPort, videoPort + 1);
+            mPacketizer.getRtpSocket().UseDualVideo(true);
+
         } catch (UnknownHostException e) {
             Log.e(TAG, "Error setting destination for RTP packetizer", e);
         }
-
-        isRunning = true;
     }
 
     public boolean isRunning() {
@@ -143,11 +161,11 @@ public class VideoService extends Service {
         sendNAL(packet);
     }
 
-    protected void sendNAL(byte[] buffer) {
+    public void sendNAL(byte[] buffer) {
         // Pack a single NAL for RTP and send
         if (mPacketizer != null) {
-            mPacketizer.setInputStream(new ByteArrayInputStream(buffer));
-            mPacketizer.run();
+            mPacketizer.addData(buffer);
+            //mPacketizer.run();
         }
     }
 
