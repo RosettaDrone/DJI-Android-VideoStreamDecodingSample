@@ -1,7 +1,10 @@
-## Based on https://github.com/DJI-Mobile-SDK-Tutorials/Android-VideoStreamDecodingSample but updated frequently. 
+## DJI video sample app modified for RosettaDrone 
 
 This is a modified version that does RTP streaming.
-To enable it, change the IP and port in the source code and press the "custom decoder" button.
+This code will replace all video code in RosettaDrone once extensively tested.
+To enable RTP streaming, change the IP and port in the source code and press the "custom decoder" button.
+
+Based on https://github.com/DJI-Mobile-SDK-Tutorials/Android-VideoStreamDecodingSample but updated frequently. 
 
 # Android-VideoStreamDecodingSample
 
