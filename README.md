@@ -4,7 +4,7 @@ This is a modified version that does RTP streaming.
 
 This code will replace all video code in RosettaDrone once extensively tested.
 
-## How To Test RTP Streaming
+## How to test RTP Streaming
 
 * Change the destination host and port in `app/src/main/java/com/dji/videostreamdecodingsample/media/DJIVideoStreamDecoder.java` in `initRosetta()`
 * Set the `com.dji.sdk.API_KEY` in `app/src/main/AndroidManifest.xml`
@@ -12,6 +12,7 @@ This code will replace all video code in RosettaDrone once extensively tested.
 * Press the "custom decoder" button
 * To receive the stream, on the destination host, run the command:
 `gst-launch-1.0 udpsrc port=5600 caps="application/x-rtp, media=video, clock-rate=90000, encoding-name=H264" ! rtph264depay ! avdec_h264 ! videoconvert ! autovideosink`
+* If you experience issues, try reducing the video resolution using the DJI Fly App or similar.
 * Please report your results commenting here: https://github.com/The1only/rosettadrone/issues/131
 
 Based on https://github.com/DJI-Mobile-SDK-Tutorials/Android-VideoStreamDecodingSample but updated frequently. 
