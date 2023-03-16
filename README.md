@@ -1,6 +1,6 @@
 ## DJI video sample app modified for RosettaDrone 
 
-This is a modified version that does RTP streaming.
+This is a slightly modified version that adds RTP streaming.
 
 This code will replace all video code in RosettaDrone once we have tested it extensively with many different drone models.
 
