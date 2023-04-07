@@ -15,6 +15,10 @@ This code will replace all video code in RosettaDrone once we have tested it ext
 * If you experience issues, try reducing the video resolution using the DJI Fly App or similar.
 * Please report your results commenting here: https://github.com/The1only/rosettadrone/issues/131
 
+The rest of this document is a copy of the original version.
+
+---
+
 Based on https://github.com/DJI-Mobile-SDK-Tutorials/Android-VideoStreamDecodingSample but updated frequently. 
 
 # Android-VideoStreamDecodingSample
