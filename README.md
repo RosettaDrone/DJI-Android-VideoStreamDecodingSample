@@ -16,6 +16,7 @@ See: https://github.com/The1only/rosettadrone/issues/131
 * To receive the stream, on the destination host, run the command:
 `gst-launch-1.0 udpsrc port=5600 caps="application/x-rtp, media=video, clock-rate=90000, encoding-name=H264" ! rtph264depay ! avdec_h264 ! videoconvert ! autovideosink`
 * If you experience issues, try reducing the video resolution using the DJI Fly App or similar.
+* Also make sure your drone is not overheated. As I explained in my [Hacking on Rosetta Tutorial](https://docs.google.com/document/d/1wR56Mvd2OsT82kxMOD7f_3-c6yJGBtLaT8LuVrmC5wI/edit?usp=sharing) it is common that video fails and crashes if you don't use a fan.
 * Please report your results commenting here: https://github.com/The1only/rosettadrone/issues/131
 
 The rest of this document is a copy of the original version.
